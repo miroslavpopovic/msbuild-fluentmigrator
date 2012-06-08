@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--Contents of JetBrains.BuildServer.MSBuildBootstrap.Generators.MSBuildProjectTargetGenerator-->
+  <!--END Contents of JetBrains.BuildServer.MSBuildBootstrap.Generators.MSBuildProjectTargetGenerator-->
+  <!--Contents of JetBrains.BuildServer.MSBuildBootstrap.Generators.MSBuildImportTargetGenerator-->
+  <Import Project="C:\TeamCity\buildAgent\work\43b5318a5f93a230\Master.proj" />
+  <!--END Contents of JetBrains.BuildServer.MSBuildBootstrap.Generators.MSBuildImportTargetGenerator-->
+  <!--Contents of JetBrains.BuildServer.MSBuildBootstrap.Generators.TaskRefGenerator-->
+  <UsingTask TaskName="JetBrains.BuildServer.MSBuildLoggers.NUnit" AssemblyFile="C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.MSBuildLoggers.dll" />
+  <UsingTask TaskName="JetBrains.BuildServer.MSBuildLoggers.NUnitTeamCity" AssemblyFile="C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.MSBuildLoggers.dll" />
+  <UsingTask TaskName="JetBrains.BuildServer.MSBuildLoggers.TeamCityImportMSTestResults" AssemblyFile="C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.MSBuildLoggers.dll" />
+  <UsingTask TaskName="JetBrains.BuildServer.MSBuildLoggers.TeamCityProgressMessage" AssemblyFile="C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.MSBuildLoggers.dll" />
+  <UsingTask TaskName="JetBrains.BuildServer.MSBuildLoggers.TeamCityPublishArtifacts" AssemblyFile="C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.MSBuildLoggers.dll" />
+  <UsingTask TaskName="JetBrains.BuildServer.MSBuildLoggers.TeamCityReportStatsValue" AssemblyFile="C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.MSBuildLoggers.dll" />
+  <UsingTask TaskName="JetBrains.BuildServer.MSBuildLoggers.TeamCitySetBuildNumber" AssemblyFile="C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.MSBuildLoggers.dll" />
+  <UsingTask TaskName="JetBrains.BuildServer.MSBuildLoggers.TeamCitySetStatus" AssemblyFile="C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.MSBuildLoggers.dll" />
+  <!--END Contents of JetBrains.BuildServer.MSBuildBootstrap.Generators.TaskRefGenerator-->
+</Project>

@@ -1,0 +1,221 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- $Id: Master-helper.proj 524 2011-11-17 06:02:23Z pwelter34 $ -->
+  <Import Project="Build\MSBuild.Community.Tasks.Targets" />
+
+  <PropertyGroup>
+    <Major>1</Major>
+    <Minor>3</Minor>
+    <Build>0</Build>
+    <Revision>0</Revision>
+
+    <BindMinor>3</BindMinor>
+    <BindBuild>0</BindBuild>
+    <BindRevision>0</BindRevision>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <DefaultExclude Include="**\.svn\**" />
+    <DefaultExclude Include="**\_svn\**" />
+    <DefaultExclude Include="**\bin\**" />
+    <DefaultExclude Include="**\Bootstrap\**" />
+    <DefaultExclude Include="**\obj\**" />
+    <DefaultExclude Include="**\Release\**" />
+    <DefaultExclude Include="**\Debug\**" />
+    <DefaultExclude Include="**\Test\**" />
+    <DefaultExclude Include="**\TestResults\**" />
+    <DefaultExclude Include="**\doc\**" />
+    <DefaultExclude Include="**\www\**" />
+    <DefaultExclude Include="**\*.user" />
+    <DefaultExclude Include="**\*.suo" />
+    <DefaultExclude Include="**\*.patch" />
+    <DefaultExclude Include="**\*.resharper" />
+    <DefaultExclude Include="**\*.cache" />
+    <DefaultExclude Include="**\_ReSharper*\**" />
+    <DefaultExclude Include="**\Documentation\ndoc\**" />
+    <DefaultExclude Include="*.zip" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <CommitFiles Include="www\index.html" />
+    <CommitFiles Include="www\MSBuild.Community.Tasks.Nightly.zip" />
+    <CommitFiles Include="www\MSBuild.Community.Tasks.Nightly.msi" />
+  </ItemGroup>
+
+  <Target Name="VerifyCalledFromMaster">
+    <Error Text="Do not execute $(MSBuildProjectFile) directly. Build Master.proj instead."
+           Condition="'$(CalledFromMaster)'!='true'" />
+  </Target>
+
+  <Target Name="Initialize" DependsOnTargets="VerifyCalledFromMaster">
+    <Message Text="Beginning Build." />
+  </Target>
+
+  <Target Name="Version" DependsOnTargets="Initialize">
+    <SvnVersion LocalPath="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="Revision" PropertyName="Revision" />
+    </SvnVersion>
+
+    <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)"/>
+
+    <Time>
+      <Output TaskParameter="Month" PropertyName="Month" />
+      <Output TaskParameter="Day" PropertyName="Day" />
+      <Output TaskParameter="Year" PropertyName="Year" />
+    </Time>
+
+    <AssemblyInfo CodeLanguage="CS"
+                  OutputFile="Source\MSBuild.Community.Tasks\Properties\AssemblyInfoCommon.cs"
+                  GenerateClass="true"
+                  AssemblyCompany="http://msbuildtasks.tigris.org/"
+                  AssemblyProduct="MSBuild.Community.Tasks"
+                  AssemblyCopyright="Copyright © $(Year) MSBuild Community Tasks Project"
+                  ComVisible="false"
+                  CLSCompliant="false"
+                  AssemblyVersion="$(Major).$(BindMinor).$(BindBuild).$(BindRevision)"
+                  AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)"
+                  AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)"
+                  Condition="$(Revision) != '0' "/>
+  </Target>
+
+  <Target Name="Compile" DependsOnTargets="Version">
+    <MSBuild Projects="Source\MSBuild.Community.Tasks.sln"
+             Properties="Configuration=Release" />
+  </Target>
+
+  <Target Name="SourceIndex" DependsOnTargets="Compile">
+    <CreateItem Include="Build\*.pdb">
+      <Output TaskParameter="Include" ItemName="SymbolFiles" />
+    </CreateItem>
+
+    <SvnSourceIndex SourceServerName="Tigris" SymbolFiles="@(SymbolFiles)" />
+  </Target>
+
+  <Target Name="Merge" DependsOnTargets="Compile">
+    <Copy SourceFiles="Build\MSBuild.Community.Tasks.dll"
+          DestinationFiles="Build\MSBuild.Temp.dll" />
+
+    <!-- Merge together library files -->
+    <ILMerge InputAssemblies="Build\MSBuild.Temp.dll;Build\Ionic.Zip.Reduced.dll"
+             Internalize="true"
+             OutputFile="Build\MSBuild.Community.Tasks.dll"
+             KeyFile="Source\MSBuild.Community.Tasks\MSBuild.Community.Tasks.snk" />
+
+    <!-- Cleanup unneed files -->
+    <CreateItem Include="Build\*.dll;Build\*.x*l" Exclude="Build\MSBuild.Community.Tasks.*" >
+      <Output TaskParameter="Include" ItemName="PurgeBuildFiles" />
+    </CreateItem>
+
+    <Delete Files="@(PurgeBuildFiles)" />
+  </Target>
+
+  <ItemGroup>
+    <References Include="Libraries\*.dll" />
+  </ItemGroup>
+
+  <Target Name="Documentation" DependsOnTargets="Compile">
+    <TaskSchema Assemblies="Build\MSBuild.Community.Tasks.dll"
+                OutputPath="Build"
+                CreateTaskList="false"
+                IgnoreMsBuildSchema="true"
+                Includes="Microsoft.Build.Commontypes.xsd"/>
+
+    <Sandcastle Clean="true" TopicStyle="vs2005"
+                NoWarnMessages="true" NoInfoMessages="true"
+                WorkingDirectory="Documentation\Help"
+                Assemblies="Build\MSBuild.Community.Tasks.dll"
+                Comments="Build\MSBuild.Community.Tasks.xml"
+                References="@(References)"
+                ChmName="MSBuildTasks" />
+
+    <Copy SourceFiles="Documentation\Help\vs2005\chm\MSBuildTasks.chm"
+          DestinationFiles="Documentation\MSBuild.Community.Tasks.chm" />
+
+    <Copy SourceFiles="Documentation\Help\vs2005\chm\MSBuildTasks.chm"
+          DestinationFiles="Build\MSBuild.Community.Tasks.chm" />
+
+    <RemoveDir Directories="Documentation\Help" />
+
+  </Target>
+
+  <Target Name="Zip" DependsOnTargets="Documentation;Merge">
+    <CreateItem Include="**\*.*" Exclude="@(DefaultExclude)" >
+      <Output TaskParameter="Include" ItemName="ZipFiles" />
+    </CreateItem>
+    <Zip Files="@(ZipFiles)"
+         ZipFileName="MSBuild.Community.Tasks.v$(Major).$(Minor).$(Build).$(Revision).zip" />
+  </Target>
+
+  <Target Name="Installer" DependsOnTargets="Compile;Documentation;Merge">
+    <MSBuild Projects="Source\MSBuild.Community.Tasks.Setup\MSBuildTasks.wixproj"
+             Properties="Configuration=Release;Major=$(Major);Minor=$(Minor);Build=$(Build);Revision=$(Revision)" />
+
+    <Copy SourceFiles="Source\MSBuild.Community.Tasks.Setup\bin\Release\MSBuild.Community.Tasks.msi"
+          DestinationFiles="MSBuild.Community.Tasks.v$(Major).$(Minor).$(Build).$(Revision).msi" />
+  </Target>
+
+  <Target Name="NuGet" DependsOnTargets="Compile;Documentation;Merge">
+    <RegistryRead KeyName="HKEY_CURRENT_USER\SOFTWARE\MSBuildTasks" ValueName="NuGetAPIKey">
+      <Output TaskParameter="Value" PropertyName="NuGetAPIKey" />
+    </RegistryRead>
+
+    <NuGetPack ToolPath="Libraries" 
+               File="MSBuildTasks.nuspec" 
+               Version="$(Major).$(Minor).$(Build).$(Revision)" />
+    <NuGetPush ToolPath="Libraries"
+               File="MSBuildTasks.$(Major).$(Minor).$(Build).$(Revision).nupkg"
+               APIKey="$(NuGetAPIKey)" />
+
+    
+    <NuGetPack ToolPath="Libraries" 
+               File="MSBuildTasks.symbols.nuspec" 
+               Symbols="true"
+               Version="$(Major).$(Minor).$(Build).$(Revision)" />
+
+    <NuGetPush ToolPath="Libraries" 
+               File="MSBuildTasks.$(Major).$(Minor).$(Build).$(Revision).symbols.nupkg" 
+               APIKey="$(NuGetAPIKey)" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="SourceIndex;Zip;Installer;NuGet">
+    <Message Text="Build Complete"/>
+  </Target>
+
+  <Target Name="Nightly" DependsOnTargets="Build">
+    <Copy SourceFiles="MSBuild.Community.Tasks.v$(Major).$(Minor).$(Build).$(Revision).zip"
+          DestinationFiles="www\MSBuild.Community.Tasks.Nightly.zip" />
+
+    <Copy SourceFiles="Source\MSBuild.Community.Tasks.Setup\bin\Release\MSBuild.Community.Tasks.msi"
+          DestinationFiles="www\MSBuild.Community.Tasks.Nightly.msi" />
+
+    <FileUpdate Files="www\index.html"
+                Regex="&lt;span id=&quot;version&quot;&gt;(\d+)\.(\d+)\.(\d+)\.(\d+)&lt;/span&gt;"
+                ReplacementText="&lt;span id=&quot;version&quot;&gt;$(Major).$(Minor).$(Build).$(Revision)&lt;/span&gt;"/>
+
+    <Time>
+      <Output TaskParameter="Month" PropertyName="Month" />
+      <Output TaskParameter="Day" PropertyName="Day" />
+      <Output TaskParameter="Year" PropertyName="Year" />
+    </Time>
+
+    <FileUpdate Files="www\index.html"
+                Regex="&lt;span id=&quot;date&quot;&gt;(\d+)/(\d+)/(\d+)&lt;/span&gt;"
+                ReplacementText="&lt;span id=&quot;date&quot;&gt;$(Month)/$(Day)/$(Year)&lt;/span&gt;"/>
+
+    <RegistryRead KeyName="HKEY_CURRENT_USER\SOFTWARE\MSBuildTasks" ValueName="CommitUser">
+      <Output TaskParameter="Value" PropertyName="CommitUser" />
+    </RegistryRead>
+    <RegistryRead KeyName="HKEY_CURRENT_USER\SOFTWARE\MSBuildTasks" ValueName="CommitPassword">
+      <Output TaskParameter="Value" PropertyName="CommitPassword" />
+    </RegistryRead>
+
+    <SvnCommit Targets="@(CommitFiles)" Message="AutoBuild"
+               Username="$(CommitUser)" Password="$(CommitPassword)">
+      <Output TaskParameter="Revision" PropertyName="Revision" />
+    </SvnCommit>
+
+    <Message Text="Build Committed Revision: $(Revision)" />
+
+  </Target>
+</Project>

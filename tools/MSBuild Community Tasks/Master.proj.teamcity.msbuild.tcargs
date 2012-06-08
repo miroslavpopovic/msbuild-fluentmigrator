@@ -1,0 +1,51 @@
+/target:Nightly
+"/logger:JetBrains.BuildServer.MSBuildLoggers.MSBuildLogger,C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.MSBuildLoggers.dll"
+/nodeReuse:false
+/property:agent_home_dir=C:\TeamCity\buildAgent
+/property:agent_name=BuildServer
+/property:agent_ownPort=9090
+/property:agent_work_dir=C:\TeamCity\buildAgent\work
+/property:build_number=37
+/property:build_vcs_number=528
+/property:build_vcs_number_1=528
+/property:build_vcs_number_Tigris_MSBuild_Tasks=528
+/property:file_encoding=Cp1252
+/property:file_separator=\
+/property:java_io_tmpdir=C:\TeamCity\buildAgent\temp\buildTmp
+/property:MSTest_10_0="C:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\MSTest.exe"
+/property:MSTest_9_0="C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE\MSTest.exe"
+/property:os_arch=x86
+/property:os_name="Windows Server 2008"
+/property:os_version=6.0
+/property:path_separator=";"
+/property:teamcity_agent_cpuBenchmark=271
+/property:teamcity_agent_dotnet_agent_url=http://localhost:9090/RPC2
+/property:teamcity_agent_dotnet_build_id=59
+/property:teamcity_auth_password=8Ptuf4Nw24rh1Nu6yQniY9ihQpeSHKsq
+/property:teamcity_auth_userId=TeamCityBuildId=59
+/property:teamcity_build_changedFiles_file=C:\TeamCity\buildAgent\temp\buildTmp\changedFiles2435843084593233828.txt
+/property:teamcity_build_checkoutDir=C:\TeamCity\buildAgent\work\43b5318a5f93a230
+/property:teamcity_build_id=59
+/property:teamcity_build_properties_file=C:\TeamCity\buildAgent\temp\buildTmp\teamcity.build8767609491150226655.properties
+/property:teamcity_build_tempDir=C:\TeamCity\buildAgent\temp\buildTmp
+/property:teamcity_build_workingDir=C:\TeamCity\buildAgent\work\43b5318a5f93a230
+/property:teamcity_buildConfName="MSBuild Tasks Build"
+/property:teamcity_buildType_id=bt2
+/property:teamcity_configuration_properties_file=C:\TeamCity\buildAgent\temp\buildTmp\teamcity.config7745113342127411946.properties
+/property:teamcity_dotnet_nunitaddin="C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.TeamCity.NUnitAddin-NUnit"
+/property:teamcity_dotnet_nunitlauncher=C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.NUnitLauncher.exe
+/property:teamcity_dotnet_nunitlauncher_msbuild_task=C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.MSBuildLoggers.dll
+/property:teamcity_dotnet_nunitlauncher1_1=C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.NUnitLauncher1.1.exe
+/property:teamcity_dotnet_nunitlauncher2_0=C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.NUnitLauncher2.0.exe
+/property:teamcity_dotnet_nunitlauncher2_0_vsts=C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.BuildServer.NUnitLauncher2.0.VSTS.exe
+/property:teamcity_dotnet_platform=C:\TeamCity\buildAgent\plugins\dotnetPlugin\bin\JetBrains.TeamCity.PlatformProcessRunner.1.1.exe
+/property:teamcity_projectName="MSBuild Community Tasks"
+/property:teamcity_runner_properties_file=C:\TeamCity\buildAgent\temp\buildTmp\teamcity.runner7583368926630851574.properties
+/property:teamcity_tests_recentlyFailedTests_file=C:\TeamCity\buildAgent\temp\buildTmp\testsToRunFirst6960988356426156214.txt
+/property:teamcity_version="6.5.5 (build 18087)"
+/property:user_country=US
+/property:user_home=C:\Users\Administrator
+/property:user_language=en
+/property:user_name=SYSTEM
+/property:user_timezone=America/Chicago
+/property:user_variant=

@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Migrate" ToolsVersion="4.0">
+
+  <PropertyGroup>
+    <MigratorTasksDirectory>$(MSBuildProjectDirectory)\..\tools\FluentMigrator\</MigratorTasksDirectory>
+
+    <!-- Fixing problems with referencing community tasks -->
+    <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)\..\tools\MSBuild Community Tasks\Build\</MSBuildCommunityTasksPath>
+    <MSBuildCommunityTasksLib>$(MSBuildCommunityTasksPath)MSBuild.Community.Tasks.dll</MSBuildCommunityTasksLib>
+
+    <BackupFileDirectory>$(ALLUSERSPROFILE)\CodeProject\Migration\</BackupFileDirectory>
+    <BackupOutputDirectory>$(MSBuildProjectDirectory)\..\backup\</BackupOutputDirectory>
+    <MainProjectDirectory>$(MSBuildProjectDirectory)\Migration.Web\</MainProjectDirectory>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildCommunityTasksPath)MSBuild.Community.Tasks.Targets"/>
+  <UsingTask
+      TaskName="FluentMigrator.MSBuild.Migrate"
+      AssemblyFile="$(MigratorTasksDirectory)FluentMigrator.MSBuild.dll" />
+
+  
+  
+  <Target Name="Common">
+    <!-- Locate machine specific connection string first -->
+    <XmlPeek XmlInputPath="$(MainProjectDirectory)\web.config" 
+             Query="/configuration/connectionStrings/add[@name='Database-$(ComputerName)']/@connectionString"
+             Condition="'$(ConnectionString)' == ''">
+      <Output TaskParameter="Result" PropertyName="ConnectionString" />
+    </XmlPeek>
+    <!-- If machine specific connection string doesn't exist, fallback to default connection string -->
+    <XmlPeek XmlInputPath="$(MainProjectDirectory)\web.config" 
+             Query="/configuration/connectionStrings/add[@name='Database']/@connectionString"
+             Condition="'$(ConnectionString)' == ''">
+      <Output TaskParameter="Result" PropertyName="ConnectionString" />
+    </XmlPeek>
+    
+    <!-- Strip database name from connection string -->
+    <CreateProperty Value="$([System.Text.RegularExpressions.Regex]::Match($(ConnectionString), `Initial Catalog=([^;])*`))">
+      <Output TaskParameter="Value" PropertyName="DatabaseName" />
+    </CreateProperty>
+    <CreateProperty Value="$(DatabaseName.Replace('Initial Catalog=', ''))">
+      <Output TaskParameter="Value" PropertyName="DatabaseName" />
+    </CreateProperty>
+    <CreateProperty Value="$([System.Text.RegularExpressions.Regex]::Replace($(ConnectionString), `Initial Catalog=([^;])*`, `Initial Catalog=master`))">
+      <Output TaskParameter="Value" PropertyName="MasterConnectionString" />
+    </CreateProperty>
+    
+    <!-- Prepare backup file name and path from current time -->
+    <MSBuild.Community.Tasks.Time Format="yyyy-MM-dd-HH-mm-ss">
+      <Output TaskParameter="FormattedTime" PropertyName="BuildDate" />
+    </MSBuild.Community.Tasks.Time>
+    <CreateProperty Value="$(BackupFileDirectory)$(DatabaseName)-$(BuildDate).bak">
+      <Output TaskParameter="Value" PropertyName="BackupFilePath" />
+    </CreateProperty>
+    <CreateProperty Value="$(BackupOutputDirectory)$(DatabaseName)-$(BuildDate).zip">
+      <Output TaskParameter="Value" PropertyName="BackupOutputPath" />
+    </CreateProperty>
+    
+    <!-- Create backup directories if they don't exist -->
+    <MakeDir Directories="$(BackupFileDirectory)" />
+    <MakeDir Directories="$(BackupOutputDirectory)" />
+  </Target>
+
+  
+  
+  <Target Name="Backup" DependsOnTargets="Common">
+    <Message Text="Backing up the database to temp folder" />
+
+    <!-- Create database backup to temp file out of current user's profile folder -->
+    <MSBuild.Community.Tasks.SqlExecute
+      ConnectionString="$(MasterConnectionString)"
+      Command="BACKUP DATABASE [$(DatabaseName)] TO DISK = N'$(BackupFilePath)' WITH NOFORMAT, INIT, NAME = N'$(DatabaseName) - Full Backup - $(BuildDate)', SKIP, NOREWIND, NOUNLOAD, STATS = 10" />
+    <Message Text="Database backup created" />
+
+    <!-- Zip the result backup to /backup directory -->
+    <Message Text="Zipping the backup file to /backup folder" />
+    <MSBuild.Community.Tasks.Zip
+        Files="$(BackupFilePath)"
+        WorkingDirectory="$(BackupFileDirectory)"
+        ZipFileName="$(BackupOutputPath)"
+        ZipLevel="9" />
+
+    <!-- Delete temporary backup file -->
+    <Delete Files="$(BackupFilePath)" />
+    <Message Text="Database backup zipped to /backup folder as $(DatabaseName)-$(BuildDate).zip" />
+  </Target>
+
+  
+  
+  <Target Name="Migrate" DependsOnTargets="Backup">
+    <Message Text="Starting FluentMigrator migration" />    
+    
+    <!-- Migration dlls are already copied to the FluentMigrator folder with post build event -->
+    <!-- Important: Target must be your Migrations assembly name, not your dll file name -->
+    <Message Text="Starting FluentMigrator migration" />
+    <Migrate Database="SqlServer2008"
+             Connection="$(ConnectionString)"
+             Target="Migration" />
+  </Target>
+
+  
+  
+  <Target Name="Restore" DependsOnTargets="Common">
+    <Message Text="Restoring the database from /backup folder" />
+
+    <!-- Unzip the given backup file -->
+    <Message Text="Unzipping the backup file $(RestoreFileName).zip" />
+    <MSBuild.Community.Tasks.Unzip
+        ZipFileName="$(BackupOutputDirectory)$(RestoreFileName).zip"
+        TargetDirectory="$(BackupFileDirectory)"
+        />
+
+    <CreateProperty Value="$(BackupFileDirectory)$(RestoreFileName).bak">
+      <Output TaskParameter="Value" PropertyName="BackupFilePath" />
+    </CreateProperty>
+  
+    <MSBuild.Community.Tasks.SqlExecute
+        ConnectionString='$(MasterConnectionString)'
+        Command="DECLARE @SQL varchar(max); SET @SQL = ''; SELECT @SQL = @SQL + 'Kill ' + Convert(varchar, SPId) + ';' FROM MASTER..SysProcesses WHERE DBId = DB_ID('$(DatabaseName)') AND SPId &lt;&gt; @@SPId; EXEC(@SQL); RESTORE DATABASE [$(DatabaseName)] FROM  DISK = N'$(BackupFilePath)' WITH FILE = 1, NOUNLOAD, REPLACE, STATS = 10;"
+        />
+
+    <!-- Delete temporary backup file -->
+    <Delete Files="$(BackupFilePath)" />
+    <Message Text="Database restored successfully from $(RestoreFileName).zip" />
+  </Target>
+</Project>
