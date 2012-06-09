@@ -96,3 +96,11 @@ Thumbs.db
 
 # Folder config file
 Desktop.ini
+
+
+############
+## Custom
+############
+
+# Build artifacts
+tools/FluentMigrator/Migration.dll

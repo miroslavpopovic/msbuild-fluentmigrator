@@ -7,6 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration", "Migration\Migr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{D39E4E30-6E25-48D2-B268-ED08524A2574}"
 	ProjectSection(SolutionItems) = preProject
+		Migration-initial.msbuild = Migration-initial.msbuild
 		Migration.msbuild = Migration.msbuild
 	EndProjectSection
 EndProject
