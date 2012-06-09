@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
+         DefaultTargets="Migrate" ToolsVersion="4.0">
+
+    <PropertyGroup>
+        <MigratorTasksDirectory>
+            $(MSBuildProjectDirectory)\packages\FluentMigrator.Tools.1.0.2.0\tools\AnyCPU\40\
+        </MigratorTasksDirectory>
+        <ConnectionString>
+            Data Source=.\SQLEXPRESS;Initial Catalog=Migration;Integrated Security=True;
+        </ConnectionString>
+    </PropertyGroup>
+
+    <UsingTask
+            TaskName="FluentMigrator.MSBuild.Migrate"
+            AssemblyFile="$(MigratorTasksDirectory)FluentMigrator.MSBuild.dll" />
+
+    <Target Name="Migrate">
+        <Message Text="Starting FluentMigrator migration" />
+
+        <!-- Important: Target must be your Migrations assembly name, not your dll file name -->
+        <Migrate Database="SqlServer2008"
+                 Connection="$(ConnectionString)"
+                 Target="Migration" />
+    </Target>
+</Project>
