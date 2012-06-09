@@ -104,3 +104,4 @@ Desktop.ini
 
 # Build artifacts
 tools/FluentMigrator/Migration.dll
+backup/*
